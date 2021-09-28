@@ -55,4 +55,69 @@ router.post('/', (req, res) => {
     }
 });
 
+router.put('/:id', (req, res) => {
+    const { contents, title } = req.body;
+    const id = req.params.id;
+    if (!contents || !title) {
+        res.status(400).json({
+            message: "Please provide title and contents for the post"
+        });
+    } else {
+        Post.update(id, { contents, title })
+            .then(post => {
+                if (!post) {
+                    res.status(404).json({
+                        message: "The post with the specified ID does not exist"
+                    })
+                } else {
+                    res.status(200).json(post);
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                res.status(500).json({
+                    message: "The post information could not be modified"
+                });
+            });
+    }
+});
+
+router.delete('/:id', (req, res) => {
+    Post.remove(req.params.id)
+        .then(count => {
+            if (count > 0) {
+                res.status(200).json(count)
+            } else {
+                res.status(404).json({
+                    message: "The post with the specified ID does not exist"
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                message: "The post could not be removed"
+            });
+        })
+});
+
+router.get('/:id/comments', (req, res) => {
+    Post.findPostComments(req.params.id)
+        .then(comment => {
+            if (!comment) {
+                res.status(404).json({
+                    message: "The post with the specified ID does not exist"
+                });
+            } else {
+                res.status(200).json(comment);
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                message: "The comments information could not be retrieved"
+            });
+        });
+});
+
 module.exports = router;
